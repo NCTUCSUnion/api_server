@@ -5,79 +5,68 @@ var mysql = require('mysql')
 var dbconfig = require('../db/config')
 var sql = require('../db/sql')
 var cs_pool = mysql.createPool(dbconfig.csunion)
-//var oldexam_pool = mysql.createPool(dbconfig.oldexam)
+var oldexam_pool = mysql.createPool(dbconfig.oldexam)
+var path = require('path')
 
-router.get('/students',function(req,res,next){
-  cs_pool.getConnection(function(err,connection){
-      connection.query(sql.getStudent,function(err,result){
-        res.json(result)
-        connection.release()
-      })
-    }
-  )
+var oldexamRouter = require('./Oldexam')
+var oldexamOauth = require('./Oldexam/oauth')
+
+var feeRouter = require('./Fee')
+
+//oldexam
+var multer = require('multer')
+var storage = multer.diskStorage({
+	destination: oldexamRouter.examDest,
+	filename: oldexamRouter.examDB
 })
+var upload = multer({storage: storage})
+router.get('/oldexam/course', oldexamRouter.getCourse)
+router.get('/oldexam/exam', oldexamRouter.getExam)
+router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
+router.post('/oldexam/download', oldexamRouter.downloadExam)
 
+// oauth for oldexam
+router.get('/oldexam/login', oldexamOauth.login)
+router.get('/oldexam/auth', oldexamOauth.getToken, oldexamOauth.getProfile)
+router.get('/oldexam/check', oldexamOauth.check)
+router.get('/oldexam/logout', oldexamOauth.logout)
 
-router.post('/pay',function(req,res,next){
-  cs_pool.getConnection(function(err,connection){
-      console.log(req.body)
-      connection.query(sql.payFee,[req.body.id],function(err,result){
-        if(err){
-          res.json({success:false})
-        }
-        else{
-          res.json({id:req.body.id,success:(result.changedRows === 1)})
-        }
-        connection.release()
-      })
-    }
-  )
-})
+//csunion fee
+router.get('/students', feeRouter.studentList)
+router.post('/pay', feeRouter.payList)
 
-// router.get('/course',function(req,res,next){
-//   oldexam_pool.getConnection(function(err,connection){
-//       connection.query(sql.getCourse,function(err,result){
-//         res.json(result)
-//         connection.release()
-//       })
-//     }
-//   )
-// })
-
-// router.get('/exam',function(req,res,next){
-//   oldexam_pool.getConnection(function(err,connection){
-//     var param = req.query || req.params
-//     connection.query(sql.getList,[param.id],function(err,result){
-//         res.json(result)
-//         connection.release()
-//       })
-//     }
-//   )
-// })
-
+//christmas week
 router.post('/merryweek/load',function(req,res,next){
   cs_pool.getConnection(function(err,connection){
+	  console.log(req.body.id)
       connection.query(sql.merryweekCheck,[req.body.id],function(err,result){
         if(err){
           console.error(err)
         }
         else{
           if(result.length === 0){
-		  var paid;
+		  var paid=0;
 		connection.query(sql.checkPay,[req.body.id],function(err,result){
-			console.log(result)
+			console.log('check')
 			if(err) 
 				console.error(err)
 			else{
 				if(result.length ===0){
-					paid = 0;	
+					connection.query(sql.merryweekNotPaid,[req.body.id],function(err,result){
+						if(err) console.error(err)
+						else{
+							paid = 0;
+						}
+					})
 				}
 				else{
 					paid = result[0].paid;
 				}
 			}
+			console.log(req.body.id)
             connection.query(sql.merryweekNew,[req.body.id],function(err,result){
-              console.log(result)
+              console.log("result")
+		    console.log(result)
                 if(err){
                   console.error(err)
                 }
@@ -111,17 +100,61 @@ router.post('/merryweek/load',function(req,res,next){
 
 router.post('/merryweek/update',function(req,res,next){
   cs_pool.getConnection(function(err,connection){
-    var game = ["shootingStar","gingerbread","pokemonGo","balloonWall","hunterxhunter","partyTicket"][req.body.code]
-    var sql = `UPDATE xmasweek SET ${game[req.body.game]} = 1 WHERE xmasweek.id = ${req.body.id}`
-    connection.query(sql,function(err,result){
+    var index = [
+	"GlaHquq0",
+	"AJvHqumA",
+	"GmPHKT5d",
+	"GQ2HMTa0",
+	"ABaHXuw0",
+	"03jH3ueX"]
+    var game = {
+	"GlaHquq0"   :  "shootingStar",
+	"AJvHqumA"   :  "gingerbread",
+	"GmPHKT5d"   :  "pokemonGo",
+	"GQ2HMTa0"   :  "balloonWall",
+	"ABaHXuw0"   :  "hunterxhunter",
+	"03jH3ueX"   :  "partyTicket"
+    }
+      connection.query(sql.merryweekCheck,[req.body.id],function(err,result){
+        if(err){
+          console.error(err)
+        }
+        else{
+          if(result.length === 0){
+            connection.query(sql.merryweekNew,[req.body.id],function(err,result){
+                if(err){
+                  console.error(err)
+                }
+                else{
+			console.log(req.body.code)
+    connection.query(`UPDATE xmasweek SET ${game[req.body.code]} = 1 WHERE xmasweek.id = ${req.body.id}`
+,function(err,result){
       if(err){
         console.error(err)
       }
       else{
-        res.json({success:(result.changedRows === 1)})
+              console.log(result)
+        res.json({success:(result.changedRows === 1),which: index.indexOf(req.body.code)})
       }
       connection.release()
     })
+
+                  }})
+            }
+	else{
+			console.log(req.body.code)
+    connection.query(`UPDATE xmasweek SET ${game[req.body.code]} = 1 WHERE xmasweek.id = ${req.body.id}`
+,function(err,result){
+      if(err){
+        console.error(err)
+      }
+      else{
+        res.json({success:(result.changedRows === 1),which: index.indexOf(req.body.code)})
+      }
+      connection.release()
+    })
+	}
+	}})
   })
 })
 
@@ -134,22 +167,109 @@ router.post('/merryweek/upload',function(req,res,next){
         console.error(err)
       }
       else{
-        if(first){
+        if(req.body.first){
           connection.query(`UPDATE xmasweek SET shootingStar = 1 WHERE xmasweek.id = ${req.body.id}`
           ,function(err,result){
             if(err){
               console.error(err)
             }
             else{
+		   console.log(result.changedRows)
               res.json({success:(result.changedRows === 1)})
             }
           })
         }
-        res.json({success:(result.changedRows === 1)})
+	 else
+           res.json({success:(result.changedRows === 1)})
       }
       connection.release()
     })
   })
 })
+
+var requestp = require('request-promise');
+var oauth = require('../oauth/config');
+
+//redirect user to authorization page 
+router.get('/auth/login', function(req, res){
+    req.session.qs = req.query.qs;
+    res.redirect(oauth.url);
+});
+
+//set redirect url as localhost:3000/auth
+router.get('/auth', function(req, res, next){
+    var requestCode = req.query.code;
+
+    const option_post = {
+        method: 'POST',
+        url: oauth.token_url,
+        headers: {
+            "Content-Type": "multipart/form-data"
+        },
+        formData: {
+        'grant_type': 'authorization_code',
+        'code': req.query.code,
+        'client_id': oauth.client_id,
+        'client_secret': oauth.client_secret,
+        'redirect_uri': oauth.redirect_url
+        },
+        json: true
+     };
+
+    requestp(option_post)
+    .then( response => {
+	  	console.log('post to get access token');
+        const option_get = {
+            uri: oauth.profile_url,
+            headers:{
+                Authorization: 'Bearer ' + response.access_token
+            },
+            json: true
+        };
+        requestp(option_get)
+        .then( body => {
+            req.session.profile = body;
+            console.log(body);
+            next();
+        })
+        .catch( err => {
+            console.log(err);
+        })
+
+    })
+    .catch( err => {
+        console.log(err);
+    });
+}, function(req, res){
+    console.log(req.session.profile.username);
+    if(req.session.profile){
+        var ID = req.session.profile.username;
+        if(!ID){
+            console.log("no student id");
+            // (modify)
+            res.redirect('https://xmas.csunion.nctu.me/login');
+            return;
+        }
+        console.log(ID);
+        // (modify)
+	if(req.session.qs === undefined || req.session.qs.length === 0)
+        	res.redirect('https://xmas.csunion.nctu.me');
+	else
+        	res.redirect('https://xmas.csunion.nctu.me?'+req.session.qs);
+    }
+});
+
+router.get('/auth/check_id', function(req, res){
+	if(req.session.profile){
+		res.json({id:req.session.profile.username});
+	}
+	else{
+		res.json({id: 0});
+	}
+});
+
+router.get('/auth/logout', function(req, res){
+    req.session.destroy();
+});
 
 module.exports = router;

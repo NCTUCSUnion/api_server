@@ -1,13 +1,15 @@
 var express = require('express');
 var path = require('path');
+var dbconfig = require('./db/config');
 //var favicon = require('serve-favicon');
 var logger = require('morgan');
 //var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var mysqlStore = require('express-mysql-session');
-
+var cors = require('cors')
 var api = require('./routes/api');
+//var oauth = require('./routes/oauth');
 
 var app = express();
 
@@ -23,17 +25,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(cookieParser());
 
+app.use(cors({
+            credentials: true, 
+            origin: ['http://localhost:3000','https://xmas.csunion.nctu.me','https://csunion.nctu.me',/https:\/\/xmas.csunion.nctu.me?.*/]
+}));
+
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "https://csunion.nctu.me");
-  res.header("Access-Control-Allow-Origin", "https://xmas.csunion.nctu.me");
+  res.header("Access-Control-Allow-Credentials",true);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
-app.use('/_api',api );
-
-// Set up session add dbconfig
-var sessionStore = new mysqlStore(opt);
+var sessionStore = new mysqlStore(dbconfig.session);
 
 app.use(session({
   name: 'session',
@@ -42,9 +45,14 @@ app.use(session({
   saveUninitialized: true, // 是否自動儲存未初始化的會話，建議false
   resave: false, // 是否每次都重新儲存會話，建議false
   cookie: {
-    maxAge: 10 * 1000 // 有效期，單位是毫秒
+    domain: 'csunion.nctu.me',
+    maxAge: 600 * 1000 // 有效期，單位是毫秒
     }
 }));
+
+app.use('/_api', api);
+//app.use('/auth', oauth);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

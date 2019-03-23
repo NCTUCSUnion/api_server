@@ -1,15 +1,23 @@
 var express = require('express');
 var router = express.Router();
+
+var mysql = require('mysql')
+var dbconfig = require('../db/config')
+var sql = require('../db/sql')
+var cs_pool = mysql.createPool(dbconfig.csunion)
+//var oldexam_pool = mysql.createPool(dbconfig.oldexam)
+
 var requestp = require('request-promise');
 var oauth = require('../oauth/config');
 
 //redirect user to authorization page 
 router.get('/auth/login', function(req, res){
+    req.session.qs = req.query.qs;
     res.redirect(oauth.url);
 });
 
 //set redirect url as localhost:3000/auth
-router.all('/auth', function(req, res, next){
+router.get('/auth', function(req, res, next){
     var requestCode = req.query.code;
 
     const option_post = {
@@ -30,6 +38,7 @@ router.all('/auth', function(req, res, next){
 
     requestp(option_post)
     .then( response => {
+	  	console.log('post to get access token');
         const option_get = {
             uri: oauth.profile_url,
             headers:{
@@ -58,21 +67,32 @@ router.all('/auth', function(req, res, next){
         if(!ID){
             console.log("no student id");
             // (modify)
-            res.redirect('/');
+            res.redirect('https://xmas.csunion.nctu.me/login');
             return;
         }
         console.log(ID);
         // (modify)
-        res.redirect('/');  
+	if(req.session.qs == undefined)
+        	res.redirect('https://xmas.csunion.nctu.me');
+	else
+        	res.redirect('https://xmas.csunion.nctu.me?'+req.session.qs);
     }
 });
 
-router.get('/logout', function(req, res){
+router.get('/auth/check_id', function(req, res){
+	if(req.session.profile){
+		res.json({id:req.session.profile.username});
+	}
+	else{
+		res.json({id: 0});
+	}
+});
+
+router.get('/auth/logout', function(req, res){
     req.session.destroy(); 
     // (modify)
-    res.redirect('/');
-})
-
+    res.redirect('https://xmas.csunion.nctu.me/login');
+});
 
 
 module.exports = router;
