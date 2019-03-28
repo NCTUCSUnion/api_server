@@ -23,7 +23,7 @@ var upload = multer({storage: storage})
 router.get('/oldexam/course', oldexamRouter.getCourse)
 router.get('/oldexam/exam', oldexamRouter.getExam)
 router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
-router.post('/oldexam/download', oldexamRouter.downloadExam)
+router.get('/oldexam/download', oldexamRouter.downloadExam)
 
 // oauth for oldexam
 router.get('/oldexam/login', oldexamOauth.login)

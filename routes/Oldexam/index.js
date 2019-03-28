@@ -28,10 +28,16 @@ module.exports = {
 		console.log(req.file.original)
 	},
  	downloadExam: function(req, res){
-		var file = req.body.eid
-		var fileLocation = path.join('/usr/local/www/apache24/data/oldexam/exam', file.toString())
-		res.setHeader('Content-type', 'application/pdf');
-		res.download(fileLocation, req.body.fn)
+		var file = req.query.eid
+		var fileLocation = path.join('/usr/local/www/apache24/data/oldexam/exam', file.toString()) //'STBOD.pdf')	
+		res.download(fileLocation, req.query.fn, function(err){
+			if(err){
+				console.log(err)	
+			}
+			else{
+				console.log('else!')
+			}
+		})
  	},
 	examDest: function(req, file, cb){
 		cb(null, '/usr/local/www/apache24/data/oldexam/exam')
