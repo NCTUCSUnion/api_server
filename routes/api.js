@@ -13,6 +13,9 @@ var oldexamOauth = require('./Oldexam/oauth')
 
 var feeRouter = require('./Fee')
 
+var fs = require('fs')
+var formidable = require('formidable')
+
 //oldexam
 var multer = require('multer')
 var storage = multer.diskStorage({
@@ -22,8 +25,25 @@ var storage = multer.diskStorage({
 var upload = multer({storage: storage})
 router.get('/oldexam/course', oldexamRouter.getCourse)
 router.get('/oldexam/exam', oldexamRouter.getExam)
-router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
+//router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
 router.get('/oldexam/download', oldexamRouter.downloadExam)
+
+router.post('/oldexam/upload', function(req, res){
+	var form = new formidable.IncomingForm()
+	console.log('haha')
+	form.parse(req, function(err, fields, files){
+		//console.log(req)
+		//console.log(files)
+		console.log(fields.filename)
+		var oldpath = files.file.path
+		var newpath = '/usr/local/www/apache24/data/oldexam/exam/' + fields.filename
+		fs.rename(oldpath, newpath, function(err){
+			if(err)	throw err
+			res.write('File uploaded!')
+			res.end('success')
+		})
+	})
+})
 
 // oauth for oldexam
 router.get('/oldexam/login', oldexamOauth.login)

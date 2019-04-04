@@ -5,7 +5,7 @@ module.exports = {
 //redirect user to authorization page 
 	login: function(req, res){
 	    req.session.qs = req.query.qs;
-	    res.redirect(oauth.url);
+	    res.redirect(oauth.oldexam_url);
 	},
 	getToken: function(req, res, next){
 	    var requestCode = req.query.code;
@@ -54,15 +54,18 @@ module.exports = {
 		if(!ID){
 		    console.log("no student id");
 		    // (modify)
-		    res.redirect('https://oldexam.csunion.nctu.me/login');
+		    // res.redirect('https://oldexam.csunion.nctu.me/login');
+		    res.redirect('http://localhost:3000');
 		    return;
 		}
 		console.log(ID);
 		// (modify)
 		if(req.session.qs === undefined || req.session.qs.length === 0)
-			res.redirect('https://oldexam.csunion.nctu.me');
+			// res.redirect('https://oldexam.csunion.nctu.me');
+		    	res.redirect('http://localhost:3000');
 		else
-			res.redirect('https://oldexam.csunion.nctu.me?'+req.session.qs);
+			// res.redirect('https://oldexam.csunion.nctu.me?'+req.session.qs);
+		    	res.redirect('http://localhost:3000');
 	    }
 	},
 	check: function(req, res){
