@@ -13,6 +13,8 @@ var oldexamOauth = require('./Oldexam/oauth')
 
 var feeRouter = require('./Fee')
 
+var chatbotRouter = require('./Chatbot')
+
 var fs = require('fs')
 var formidable = require('formidable')
 
@@ -54,6 +56,11 @@ router.get('/oldexam/logout', oldexamOauth.logout)
 //csunion fee
 router.get('/students', feeRouter.studentList)
 router.post('/pay', feeRouter.payList)
+
+// for messenger chatbot
+router.get('/webhook', chatbotRouter.webhook)
+router.post('/webhook', chatbotRouter.webhookPost)
+router.get('/webhook/newpost', chatbotRouter.webhookNewPost)
 
 //christmas week
 router.post('/merryweek/load',function(req,res,next){
