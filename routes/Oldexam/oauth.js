@@ -65,7 +65,7 @@ module.exports = {
 		    	res.redirect('http://localhost:3000');
 		else
 			// res.redirect('https://oldexam.csunion.nctu.me?'+req.session.qs);
-		    	res.redirect('http://localhost:3000');
+		    	res.redirect('http://localhost:3000/main');
 	    }
 	},
 	check: function(req, res){

@@ -56,27 +56,59 @@ module.exports = {
 				})
 			}
 			else{
-				request.post({
-					headers: {'Content-Type': 'application/json'},
-					url: chatbot_config.sendMessageAPI,
-					json: {
-					  "messaging_type": "RESPONSE",
-					  "recipient": {
-					    "id": recipient_id,
-					  },
-					  "message": {
-					    "text": '我愛資工 資工NO.1！',
-					  }
-					},
-					function(error, response, body){
-						if(error)	throw error
-						else{
-							console.log(body)
-							console.log('Send back')
-							res.sendStatus(200)
-						}
+				var msg
+				if(recipient_name != undefined){
+					if(recipient_name == '抽'){
+						connection.query(sql.chatbotRandomSelect, function(err, msg){
+							console.log(msg)
+							request.post({
+								headers: {'Content-Type': 'application/json'},
+								url: chatbot_config.sendMessageAPI,
+								json: {
+								  "messaging_type": "RESPONSE",
+								  "recipient": {
+									"id": recipient_id,
+								  },
+								  "message": {
+									"text": msg[0].name
+								  }
+								},
+								function(error, response, body){
+									if(error)	throw error
+									else{
+										console.log(body)
+										console.log('Send back')
+										res.sendStatus(200)
+									}
+								}
+							})
+						})
+						connection.release()
+					}	
+					else{
+						request.post({
+							headers: {'Content-Type': 'application/json'},
+							url: chatbot_config.sendMessageAPI,
+							json: {
+							  "messaging_type": "RESPONSE",
+							  "recipient": {
+								"id": recipient_id,
+							  },
+							  "message": {
+								"text": '我愛資工 資工NO.1 \n5/24資工之夜 - 資事份子😈' 
+							  }
+							},
+							function(error, response, body){
+								if(error)	throw error
+								else{
+									console.log(body)
+									console.log('Send back')
+									res.sendStatus(200)
+								}
+							}
+						})
 					}
-				})
+				}
 			}
 		})
 		})
@@ -148,7 +180,7 @@ module.exports = {
 												"id": result[i].id
 											  },
 											  "message": {
-												"text": board+'有新文章喔!\n'+result_thread[0].subject+' by '+result_thread[0].author+'\nhttp://csdiscuz.nctu.me/forum.php?mod=viewthread&tid='+req.query.tid
+												"text": board+' 有一篇新文章喔!\n'+result_thread[0].subject+' by '+result_thread[0].author+'\nhttp://csdiscuz.nctu.me/forum.php?mod=viewthread&tid='+req.query.tid
 											  }
 											},
 											function(error, response, body){

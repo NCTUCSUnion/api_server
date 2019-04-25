@@ -2,3 +2,4 @@
 .DS_Store
 /db
 /oauth
+/routes/Chatbot/config.js

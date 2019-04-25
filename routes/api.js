@@ -30,22 +30,7 @@ router.get('/oldexam/exam', oldexamRouter.getExam)
 //router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
 router.get('/oldexam/download', oldexamRouter.downloadExam)
 
-router.post('/oldexam/upload', function(req, res){
-	var form = new formidable.IncomingForm()
-	console.log('haha')
-	form.parse(req, function(err, fields, files){
-		//console.log(req)
-		//console.log(files)
-		console.log(fields.filename)
-		var oldpath = files.file.path
-		var newpath = '/usr/local/www/apache24/data/oldexam/exam/' + fields.filename
-		fs.rename(oldpath, newpath, function(err){
-			if(err)	throw err
-			res.write('File uploaded!')
-			res.end('success')
-		})
-	})
-})
+router.post('/oldexam/upload', oldexamRouter.uploadExam)
 
 // oauth for oldexam
 router.get('/oldexam/login', oldexamOauth.login)
