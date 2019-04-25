@@ -13,6 +13,11 @@ var oldexamOauth = require('./Oldexam/oauth')
 
 var feeRouter = require('./Fee')
 
+var chatbotRouter = require('./Chatbot')
+
+var fs = require('fs')
+var formidable = require('formidable')
+
 //oldexam
 var multer = require('multer')
 var storage = multer.diskStorage({
@@ -22,8 +27,10 @@ var storage = multer.diskStorage({
 var upload = multer({storage: storage})
 router.get('/oldexam/course', oldexamRouter.getCourse)
 router.get('/oldexam/exam', oldexamRouter.getExam)
-router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
+//router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
 router.get('/oldexam/download', oldexamRouter.downloadExam)
+
+router.post('/oldexam/upload', oldexamRouter.uploadExam)
 
 // oauth for oldexam
 router.get('/oldexam/login', oldexamOauth.login)
@@ -34,6 +41,11 @@ router.get('/oldexam/logout', oldexamOauth.logout)
 //csunion fee
 router.get('/students', feeRouter.studentList)
 router.post('/pay', feeRouter.payList)
+
+// for messenger chatbot
+router.get('/webhook', chatbotRouter.webhook)
+router.post('/webhook', chatbotRouter.webhookPost)
+router.get('/webhook/newpost', chatbotRouter.webhookNewPost)
 
 //christmas week
 router.post('/merryweek/load',function(req,res,next){
