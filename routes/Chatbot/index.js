@@ -58,8 +58,8 @@ module.exports = {
 			else{
 				var msg
 				if(recipient_name != undefined){
-					if(recipient_name == '抽'){
-						connection.query(sql.chatbotRandomSelect, function(err, msg){
+					if(recipient_name == '素' || recipient_name == '速' ||  recipient_name == '宿' || recipient_name == '塑'){
+						connection.query(sql.angelaWho, [recipient_id],function(err, msg){
 							console.log(msg)
 							request.post({
 								headers: {'Content-Type': 'application/json'},
@@ -70,7 +70,7 @@ module.exports = {
 									"id": recipient_id,
 								  },
 								  "message": {
-									"text": msg[0].name
+									"text": "你的小主人是：" + msg[0].mname
 								  }
 								},
 								function(error, response, body){
@@ -85,6 +85,112 @@ module.exports = {
 						})
 						connection.release()
 					}	
+					else if(recipient_name[0] == 's'){
+						connection.query(sql.angelaScore, [recipient_name, recipient_id], function(err, result){
+								if(err) throw err
+								else	console.log('score received')
+								connection.release()
+						})
+							request.post({
+								headers: {'Content-Type': 'application/json'},
+								url: chatbot_config.sendMessageAPI,
+								json: {
+								  "messaging_type": "RESPONSE",
+								  "recipient": {
+									"id": recipient_id,
+								  },
+								  "message": {
+									"text": "你給這樣合理嗎？\n\n\n我說分數"
+								  }
+								},
+								function(error, response, body){
+									if(error)	throw error
+									else{
+										console.log(body)
+										console.log('Send back')
+										res.sendStatus(200)
+									}
+								}
+							})
+					}
+					else if(recipient_name[0] == '誰'){
+						connection.query(sql.angelaAns, [recipient_id], function(err, result){
+								console.log(result[0].name)
+							request.post({
+								headers: {'Content-Type': 'application/json'},
+								url: chatbot_config.sendMessageAPI,
+								json: {
+								  "messaging_type": "RESPONSE",
+								  "recipient": {
+									"id": recipient_id,
+								  },
+								  "message": {
+									"text": "哈哈是 "+result[0].name+" 啦"
+								  }
+								},
+								function(error, response, body){
+									if(error)	throw error
+									else{
+										console.log(body)
+										console.log('Send back')
+										res.sendStatus(200)
+									}
+								}
+							})
+						})
+								connection.release()
+					}
+					else if(recipient_name[0] == 'g'){
+						connection.query(sql.angelaTry, [recipient_name, recipient_id], function(err, result){
+								if(err) throw err
+								else	console.log('guess received')
+								connection.release()
+						})
+							request.post({
+								headers: {'Content-Type': 'application/json'},
+								url: chatbot_config.sendMessageAPI,
+								json: {
+								  "messaging_type": "RESPONSE",
+								  "recipient": {
+									"id": recipient_id,
+								  },
+								  "message": {
+									"text": "想知道小天使是誰嗎？\n多跟大家蕉流蕉流啊"
+								  }
+								},
+								function(error, response, body){
+									if(error)	throw error
+									else{
+										console.log(body)
+										console.log('Send back')
+										res.sendStatus(200)
+									}
+								}
+							})
+					}
+					else if(recipient_name == '有空'){
+							request.post({
+								headers: {'Content-Type': 'application/json'},
+								url: chatbot_config.sendMessageAPI,
+								json: {
+								  "messaging_type": "RESPONSE",
+								  "recipient": {
+									"id": recipient_id,
+								  },
+								  "message": {
+									"text": "我們黃金十二猛漢想要跟你蕉流蕉流"
+								  }
+								},
+								function(error, response, body){
+									if(error)	throw error
+									else{
+										console.log(body)
+										console.log('Send back')
+										res.sendStatus(200)
+									}
+								}
+							})
+					}
 					else{
 						request.post({
 							headers: {'Content-Type': 'application/json'},
@@ -95,7 +201,7 @@ module.exports = {
 								"id": recipient_id,
 							  },
 							  "message": {
-								"text": '我愛資工 資工NO.1 \n5/24資工之夜 - 資事份子😈' 
+								"text": '我愛資工 資工NO.1 \n教召大家加油❤️🥰' 
 							  }
 							},
 							function(error, response, body){
@@ -117,6 +223,8 @@ module.exports = {
 
 		console.log('over')
 	},
+	//webhookNoti: function(req, res){
+	//},
 	webhookNewPost: function(req, res){
 		console.log('Receive new post!')
 		console.log(req.query.tid)
