@@ -74,7 +74,7 @@ module.exports = {
 					function(next){
 						connection.query(sql.oldexamCourseCheck, [fields.course], function(err, cid){
 							if(err) throw err
-							else { cID = parseInt(cid[0].cid); console.log('query cid:',cID);}
+							else { cID = parseInt(cid[0].cid); console.log('query cid:' + cID);}
 							next(err, cid)
 						})
 					},
@@ -111,9 +111,10 @@ module.exports = {
 							if(err) throw err
 							else {
 									console.log(eid); 
-									console.log('Old exam insert succeed!')
+									eID = eid.insertId
+									console.log('Old exam insert succeed! eid:' + eID)
 							}
-							next(err, eid)
+							next(err, eID)
 						})
 					},
 					function(next){
@@ -127,16 +128,18 @@ module.exports = {
 							// Write the file
 							fs.writeFile(newpath, data, function (err) {
 								if (err) throw err;
-								res.write('File uploaded and moved!');
+								else {
+										console.log('File written!');
+										// Delete the file
+										fs.unlink(oldpath, function (err) {
+											if (err) throw err;
+											console.log('File deleted!');
+										});
+										res.write('File uploaded and moved!');
+								}
 								res.end();
-								console.log('File written!');
 							});
 
-							// Delete the file
-							fs.unlink(oldpath, function (err) {
-								if (err) throw err;
-								console.log('File deleted!');
-							});
 							next(err, newpath)
 						})
 					}], function(err, results){
