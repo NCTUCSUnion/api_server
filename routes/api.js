@@ -27,6 +27,7 @@ var storage = multer.diskStorage({
 var upload = multer({storage: storage})
 router.get('/oldexam/course', oldexamRouter.getCourse)
 router.get('/oldexam/exam', oldexamRouter.getExam)
+router.get('/oldexam/teacher', oldexamRouter.getTeacher)
 //router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
 router.get('/oldexam/download', oldexamRouter.downloadExam)
 
@@ -273,7 +274,8 @@ router.get('/auth', function(req, res, next){
 
 router.get('/auth/check_id', function(req, res){
 	if(req.session.profile){
-		res.json({id:req.session.profile.username});
+		const { id:username, ...profile} = req.session.profile;
+		res.json({...profile, id});
 	}
 	else{
 		res.json({id: 0});
