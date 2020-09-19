@@ -54,17 +54,17 @@ module.exports = {
 		if(!ID){
 		    console.log("no student id");
 		    // (modify)
-		    res.redirect('https://pastexam.csunion.nctu.me');
+		    res.redirect('https://pastexam.nctucsunion.me');
 		    // res.redirect('http://localhost:3000');
 		    return;
 		}
 		console.log(ID);
 		// (modify)
 		if(req.session.qs === undefined || req.session.qs.length === 0)
-			res.redirect('https://pastexam.csunion.nctu.me');
+			res.redirect('https://pastexam.nctucsunion.me/main');
 		    	// res.redirect('http://localhost:3000');
 		else
-			res.redirect('https://pastexam.csunion.nctu.me');
+			res.redirect('https://pastexam.nctucsunion.me/main');
 		    	// res.redirect('http://localhost:3000/main');
 	    }
 	},

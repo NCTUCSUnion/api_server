@@ -59,7 +59,7 @@ app.use(session({
   saveUninitialized: true, // 是否自動儲存未初始化的會話，建議false
   resave: false, // 是否每次都重新儲存會話，建議false
   cookie: {
-    domain: 'csunion.nctu.me',
+    domain: 'nctucsunion.me',
     maxAge: 600 * 1000 // 有效期，單位是毫秒
     }
 }));
