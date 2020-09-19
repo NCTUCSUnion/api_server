@@ -44,7 +44,7 @@ router.get('/students', feeRouter.studentList)
 router.post('/pay', feeRouter.payList)
 router.post('/fee_check', feeRouter.check_auth)
 router.post('/fee_auth', feeRouter.login)
-router.post('/logout', feeRouter.logout)
+router.post('/fee_logout', feeRouter.logout)
 
 // for messenger chatbot
 router.get('/webhook', chatbotRouter.webhook)
