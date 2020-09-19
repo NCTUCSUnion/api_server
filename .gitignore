@@ -3,3 +3,4 @@
 /db
 /oauth
 /routes/Chatbot/config.js
+/routes/Fee/auth.js
