@@ -160,16 +160,23 @@ module.exports = {
 	},
 	downloadExam: function (req, res) {
 		var file = req.query.eid.toString().trim()
-		if (!file.match(/^\d+$/))
-			res.sendStatus(404)
-		var fileLocation = path.join('/usr/local/www/apache24/data/oldexam/exam', file)
-		res.download(fileLocation, req.query.fn, function (err) {
-			if (err) {
-				console.log(err)
-			}
-			else {
-				console.log('else!')
-			}
+		oldexam_pool.getConnection(function (err, connection) {
+			connection.query(sql.oldexamCheckFileExist, [file], function (err, result) {
+				if (result) {
+					var fileLocation = path.join('/usr/local/www/apache24/data/oldexam/exam', file)
+					res.download(fileLocation, req.query.fn, function (err) {
+						if (err) {
+							console.log(err)
+						}
+						else {
+							console.log('else!')
+						}
+					})
+				}
+				else {
+					res.sendStatus(404)
+				}
+			})
 		})
 	},
 	examDest: function (req, file, cb) {
