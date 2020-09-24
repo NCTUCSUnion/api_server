@@ -8,79 +8,87 @@ var async = require('async')
 var fs = require('fs')
 
 module.exports = {
-	getCourse: function(req,res,next){
-		oldexam_pool.getConnection(function(err,connection){
-	       	connection.query(sql.getCourse,function(err,result){
-		res.json(result)
-		connection.release()
-	       })
-	     }
-	   )
-	 },
-	getTeacher: function(req,res,next){
-		oldexam_pool.getConnection(function(err,connection){
-	       	connection.query(sql.getTeacher,function(err,result){
-		res.json(result)
-		connection.release()
-	       })
-	     }
-	   )
-	 },
- 	getExam: function(req,res,next){
-		oldexam_pool.getConnection(function(err,connection){
-		var param = req.query || req.params
-	   	connection.query(sql.getList,[param.id],function(err,result){
-		res.json(result)
-		connection.release()
-	       })
-	     }
-	   )
-	 },
-	uploadExam: function(req, res){
+	getCourse: function (req, res, next) {
+		oldexam_pool.getConnection(function (err, connection) {
+			connection.query(sql.getCourse, function (err, result) {
+				res.json(result)
+				connection.release()
+			})
+		}
+		)
+	},
+	getTeacher: function (req, res, next) {
+		oldexam_pool.getConnection(function (err, connection) {
+			connection.query(sql.getTeacher, function (err, result) {
+				res.json(result)
+				connection.release()
+			})
+		}
+		)
+	},
+	getExam: function (req, res, next) {
+		oldexam_pool.getConnection(function (err, connection) {
+			var param = req.query || req.params
+			connection.query(sql.getList, [param.id], function (err, result) {
+				res.json(result)
+				connection.release()
+			})
+		}
+		)
+	},
+	uploadExam: function (req, res) {
+		if (!req.session.profile)
+			res.sendStatus(401)
 		var form = new formidable.IncomingForm()
 		var iID, cID, eID, type
-		form.parse(req, function(err, fields, files){
-			oldexam_pool.getConnection(function(err, connection){
+		form.parse(req, function (err, fields, files) {
+			oldexam_pool.getConnection(function (err, connection) {
 				async.series([
-					function(next){
-						connection.query(sql.oldexamInstruCheck, [fields.instructor], function(err, result){
-							if (result[0] === undefined){
-								connection.query(sql.oldexamInstruNew, [fields.instructor], function(err, result_new){
-									if(err)	throw err
+					function (next) {
+						connection.query(sql.oldexamInstruCheck, [fields.instructor.toString().trim()], function (err, result) {
+							if (result[0] === undefined) {
+								connection.query(sql.oldexamInstruNew, [fields.instructor.toString().trim()], function (err, result_new) {
+									if (err) throw err
 									else console.log('insert new instructor succeed!')
 								})
 							}
 							next(err, result)
 						})
 					},
-					function(next){
-						connection.query(sql.oldexamInstruCheck, [fields.instructor], function(err, iid){
-							if(err) throw err
-							else {iID = parseInt(iid[0].iid); console.log('query iid:' + iid[0].iid)}
+					function (next) {
+						connection.query(sql.oldexamInstruCheck, [fields.instructor.toString().trim()], function (err, iid) {
+							if (err) throw err
+							else {
+								iID = parseInt(iid[0].iid)
+								console.log('query iid:' + iid[0].iid)
+							}
 							next(err, iid)
 						})
 					},
-					function(next){
-						connection.query(sql.oldexamCourseCheck, [fields.course], function(err, result){
-							if(result[0] === undefined){
-								connection.query(sql.oldexamCourseNew, [fields.course, fields.category], function(err, result_new){
-									if(err) throw err
+					function (next) {
+						connection.query(sql.oldexamCourseCheck, [fields.course.toString().trim()], function (err, result) {
+							if (result[0] === undefined) {
+								connection.query(sql.oldexamCourseNew, [fields.course.toString().trim(), fields.category.toString().trim()], function (err, result_new) {
+									if (err) throw err
 									else console.log('insert new course succeed!')
 								})
 							}
 							next(err, result)
 						})
 					},
-					function(next){
-						connection.query(sql.oldexamCourseCheck, [fields.course], function(err, cid){
-							if(err) throw err
-							else { cID = parseInt(cid[0].cid); console.log('query cid:' + cID);}
+					function (next) {
+						connection.query(sql.oldexamCourseCheck, [fields.course.toString().trim()], function (err, cid) {
+							if (err) throw err
+							else {
+								cID = parseInt(cid[0].cid)
+								console.log('query cid:' + cID)
+							}
 							next(err, cid)
 						})
 					},
-					function(next){
+					function (next) {
 						// process type
-						switch(fields.type) {
+						switch (fields.type) {
 							case "期中考":
 								type = 'midterm'
 								break
@@ -95,9 +103,9 @@ module.exports = {
 						}
 						next(null, type)
 					},
-					function(next){
+					function (next) {
 						console.log('----------query para check----------')
-						console.log('cid',cID);
+						console.log('cid', cID);
 						console.log('uid', fields.uid);
 						console.log('iid', iID);
 						console.log('semester', fields.semester);
@@ -106,18 +114,18 @@ module.exports = {
 						console.log(new Date())
 						console.log('------------------------------------')
 
-						connection.query(sql.oldexamUpload, [cID, fields.uid, fields.uid, iID, fields.semester, type, fields.filename, new Date()], function(err, eid){
+						connection.query(sql.oldexamUpload, [cID, fields.uid, fields.uid, iID, fields.semester, type, fields.filename, new Date()], function (err, eid) {
 							console.log('upload query!')
-							if(err) throw err
+							if (err) throw err
 							else {
-									console.log(eid); 
-									eID = eid.insertId
-									console.log('Old exam insert succeed! eid:' + eID)
+								console.log(eid);
+								eID = eid.insertId
+								console.log('Old exam insert succeed! eid:' + eID)
 							}
 							next(err, eID)
 						})
 					},
-					function(next){
+					function (next) {
 						console.log(eID)
 						var oldpath = files.file.path
 						var newpath = '/usr/local/www/apache24/data/oldexam/exam/' + eID
@@ -129,20 +137,20 @@ module.exports = {
 							fs.writeFile(newpath, data, function (err) {
 								if (err) throw err;
 								else {
-										console.log('File written!');
-										// Delete the file
-										fs.unlink(oldpath, function (err) {
-											if (err) throw err;
-											console.log('File deleted!');
-										});
-										res.write('File uploaded and moved!');
+									console.log('File written!');
+									// Delete the file
+									fs.unlink(oldpath, function (err) {
+										if (err) throw err;
+										console.log('File deleted!');
+									});
+									res.write('File uploaded and moved!');
 								}
 								res.end();
 							});
 
 							next(err, newpath)
 						})
-					}], function(err, results){
+					}], function (err, results) {
 						console.log('last callback check eid:' + eID)
 					}
 				)
@@ -150,30 +158,32 @@ module.exports = {
 
 		})
 	},
- 	downloadExam: function(req, res){
-		var file = req.query.eid
-		var fileLocation = path.join('/usr/local/www/apache24/data/oldexam/exam', file.toString())	
-		res.download(fileLocation, req.query.fn, function(err){
-			if(err){
-				console.log(err)	
+	downloadExam: function (req, res) {
+		var file = req.query.eid.toString().trim()
+		if (!file.match(/^\d+$/))
+			res.sendStatus(404)
+		var fileLocation = path.join('/usr/local/www/apache24/data/oldexam/exam', file)
+		res.download(fileLocation, req.query.fn, function (err) {
+			if (err) {
+				console.log(err)
 			}
-			else{
+			else {
 				console.log('else!')
 			}
 		})
- 	},
-	examDest: function(req, file, cb){
+	},
+	examDest: function (req, file, cb) {
 		cb(null, '/usr/local/www/apache24/data/oldexam/exam')
 	},
-	examDB: function(req, file, cb){
-	  var values = [[req.body.cid, req.body.id, req.body.id, req.body.iid, req.body.semester, req.body.type, file.originalname, req.body.comment, new Date()]]
-	  oldexam_pool.getConnection(function(err, connection){
-	  	connection.query(sql.uploadExam, [values],function(err, result){
-			if(err) throw err
-			cb(null, result.inserId.toString())
-			connection.release()
-	  	})
-	  })
+	examDB: function (req, file, cb) {
+		var values = [[req.body.cid, req.body.id, req.body.id, req.body.iid, req.body.semester, req.body.type, file.originalname, req.body.comment, new Date()]]
+		oldexam_pool.getConnection(function (err, connection) {
+			connection.query(sql.uploadExam, [values], function (err, result) {
+				if (err) throw err
+				cb(null, result.inserId.toString())
+				connection.release()
+			})
+		})
 	}
 }
 
