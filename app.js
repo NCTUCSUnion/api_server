@@ -26,22 +26,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(cookieParser());
 
 app.use(cors({
-            credentials: true, 
-            origin: [
-		    'http://localhost:.*',
-		    'http://localhost:3000',
-		    'https://nctucsunion.me',
-		    'https://fee.nctucsunion.me',
-		    'https://xmas.nctucsunion.me',
-		    'https://pastexam.nctucsunion.me',
-		    'https://meet.nctucsunion.me',
-		    /https:\/\/.*.nctucsunion.me?.*/
-	    ]
+  credentials: true,
+  origin: [
+    'http://localhost:.*',
+    'http://localhost:3000',
+    /^https:\/\/(.+\.)?nctucsunion.me\/?$/
+  ]
 }));
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   //res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Credentials",true);
+  res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
@@ -57,7 +52,7 @@ app.use(session({
   cookie: {
     domain: 'nctucsunion.me',
     maxAge: 600 * 1000 // 有效期，單位是毫秒
-    }
+  }
 }));
 
 app.use('/_api', api);
@@ -65,14 +60,14 @@ app.use('/_api', api);
 
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

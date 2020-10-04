@@ -1,9 +1,22 @@
 const mysql = require('mysql')
-var dbconfig = require('../../db/config')
-var sql = require('../../db/sql')
-const pool = mysql.meet_createPool(dbconfig.meet)
-const pool2 = mysql.meet_createPool(dbconfig.csunion)
+const dbconfig = require('../../db/config')
+const sql = require('../../db/sql')
+const pool = mysql.createPool(dbconfig.meet)
+const pool2 = mysql.createPool(dbconfig.csunion)
 const auth = require('./auth')
+
+function addScoreToAll(eid, scores, conn) {
+    return Promise.all(scores.map(function (item, idx, arr) {
+        return new Promise((resolve, reject) => {
+            conn.query(sql.meet_addScore2CorrectPoll, [scores[idx].score, eid, scores[idx].poll], function (err, result) {
+                if (err)
+                    reject(err)
+                else
+                    resolve()
+            })
+        });
+    }))
+}
 
 module.exports = {
     checkAuth: function (req, res, next) {
@@ -332,18 +345,6 @@ module.exports = {
                 })
             }
         })
-    },
-    addScoreToAll: function (eid, scores, conn) {
-        return Promise.all(scores.map(function (item, idx, arr) {
-            return new Promise((resolve, reject) => {
-                conn.query(sql.meet_addScore2CorrectPoll, [scores[idx].score, eid, scores[idx].poll], function (err, result) {
-                    if (err)
-                        reject(err)
-                    else
-                        resolve()
-                })
-            });
-        }))
     },
     event_archive: function (req, res) {
         const scores = req.body.scores
