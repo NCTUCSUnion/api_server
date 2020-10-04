@@ -10,7 +10,9 @@ var fs = require('fs')
 module.exports = {
 	getCourse: function (req, res, next) {
 		oldexam_pool.getConnection(function (err, connection) {
+			if (err) console.log(err)
 			connection.query(sql.getCourse, function (err, result) {
+				if (err) console.log(err)
 				res.json(result)
 				connection.release()
 			})
@@ -19,7 +21,9 @@ module.exports = {
 	},
 	getTeacher: function (req, res, next) {
 		oldexam_pool.getConnection(function (err, connection) {
+			if (err) console.log(err)
 			connection.query(sql.getTeacher, function (err, result) {
+				if (err) console.log(err)
 				res.json(result)
 				connection.release()
 			})
@@ -28,8 +32,10 @@ module.exports = {
 	},
 	getExam: function (req, res, next) {
 		oldexam_pool.getConnection(function (err, connection) {
+			if (err) console.log(err)
 			var param = req.query || req.params
 			connection.query(sql.getList, [param.id], function (err, result) {
+				if (err) console.log(err)
 				res.json(result)
 				connection.release()
 			})
@@ -150,6 +156,10 @@ module.exports = {
 
 							next(err, newpath)
 						})
+					},
+					function (next) {
+						connection.release()
+						next(null, 'Connection released')
 					}], function (err, results) {
 						console.log('last callback check eid:' + eID)
 					}
@@ -163,8 +173,10 @@ module.exports = {
 			res.sendStatus(401)
 		else {
 			var file = req.query.eid.toString().trim()
-			if (!file.match(/^\d+$/))
+			console.log('[Download] - ' + req.session.profile.username + ' - ' + file)
+			if (!file.match(/^\d+$/)){
 				res.sendStatus(404)
+			}
 			else {
 				oldexam_pool.getConnection(function (err, connection) {
 					connection.query(sql.oldexamCheckFileExist, [file], function (err, result) {
@@ -174,14 +186,12 @@ module.exports = {
 								if (err) {
 									console.log(err)
 								}
-								else {
-									console.log('else!')
-								}
 							})
 						}
 						else {
 							res.sendStatus(404)
 						}
+						connection.release()
 					})
 				})
 			}
