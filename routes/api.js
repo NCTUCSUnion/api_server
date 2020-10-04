@@ -1,13 +1,6 @@
 var express = require('express');
 var router = express.Router();
 
-var mysql = require('mysql')
-var dbconfig = require('../db/config')
-var sql = require('../db/sql')
-var cs_pool = mysql.createPool(dbconfig.csunion)
-var oldexam_pool = mysql.createPool(dbconfig.oldexam)
-var path = require('path')
-
 var oldexamRouter = require('./Oldexam')
 var oldexamOauth = require('./Oldexam/oauth')
 
@@ -15,22 +8,13 @@ var feeRouter = require('./Fee')
 
 var chatbotRouter = require('./Chatbot')
 
-var fs = require('fs')
-var formidable = require('formidable')
+var meetRouter = require('./Meet')
 
 //oldexam
-var multer = require('multer')
-var storage = multer.diskStorage({
-  destination: oldexamRouter.examDest,
-  filename: oldexamRouter.examDB
-})
-var upload = multer({ storage: storage })
 router.get('/oldexam/course', oldexamRouter.getCourse)
 router.get('/oldexam/exam', oldexamRouter.getExam)
 router.get('/oldexam/teacher', oldexamRouter.getTeacher)
-//router.post('/oldexam/upload', upload.single('oldexam'), oldexamRouter.uploadExam)
 router.get('/oldexam/download', oldexamRouter.downloadExam)
-
 router.post('/oldexam/upload', oldexamRouter.uploadExam)
 
 // oauth for oldexam
@@ -51,6 +35,23 @@ router.get('/webhook', chatbotRouter.webhook)
 router.post('/webhook', chatbotRouter.webhookPost)
 router.get('/webhook/newpost', chatbotRouter.webhookNewPost)
 
+router.post('/meet/check', meetRouter.check)
+router.post('/meet/login', meetRouter.login)
+router.post('/meet/logout', meetRouter.logout)
+router.post('/meet/group_add', meetRouter.checkSuper, meetRouter.group_add)
+router.get('/meet/groups', meetRouter.checkSuper, meetRouter.group_all)
+router.post('/meet/group_del', meetRouter.checkSuper, meetRouter.group_del)
+router.post('/meet/group_delall', meetRouter.checkSuper, meetRouter.group_delall)
+router.post('/meet/group_update', meetRouter.checkSuper, meetRouter.group_update)
+router.post('/meet/event_info', meetRouter.checkSuper, meetRouter.event_info)
+router.post('/meet/event_add', meetRouter.checkSuper, meetRouter.event_add)
+router.post('/meet/event_close', meetRouter.checkSuper, meetRouter.event_close)
+router.post('/meet/event_archive', meetRouter.checkSuper, meetRouter.event_archive)
+router.get('/meet/event_cont', meetRouter.checkAuth, meetRouter.event_cont)
+router.post('/meet/event_poll', meetRouter.checkAuth, meetRouter.event_poll)
+router.get('/meet/students', meetRouter.checkSuper, meetRouter.students)
+
+
 var requestp = require('request-promise');
 var oauth = require('../oauth/config');
 
@@ -62,8 +63,6 @@ router.get('/auth/login', function (req, res) {
 
 //set redirect url as localhost:3000/auth
 router.get('/auth', function (req, res, next) {
-  var requestCode = req.query.code;
-
   const option_post = {
     method: 'POST',
     url: oauth.token_url,

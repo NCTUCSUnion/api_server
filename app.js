@@ -34,6 +34,7 @@ app.use(cors({
 		    'https://fee.nctucsunion.me',
 		    'https://xmas.nctucsunion.me',
 		    'https://pastexam.nctucsunion.me',
+		    'https://meet.nctucsunion.me',
 		    /https:\/\/.*.nctucsunion.me?.*/
 	    ]
 }));
