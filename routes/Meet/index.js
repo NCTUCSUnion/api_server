@@ -21,14 +21,14 @@ function addScoreToAll(eid, scores, conn) {
 module.exports = {
     checkAuth: function (req, res, next) {
         if (!req.session.meet_profile)
-            res.sendStatus(401)
+            res.status(401).send('請先登入！')
         else {
             next()
         }
     },
     checkSuper: function (req, res, next) {
         if (!req.session.meet_profile || !req.session.meet_profile.isSuper)
-            res.sendStatus(401)
+            res.status(401).send('請先登入！')
         else {
             next()
         }
@@ -42,7 +42,6 @@ module.exports = {
                 pool.getConnection(function (err, conn) {
                     if (err) {
                         res.json({ logined: true, isSuper: false, group: req.session.meet_profile })
-                        conn.release()
                     }
                     else {
                         conn.query(sql.meet_getGroupInfo, [req.session.meet_profile.gid,], function (err, result) {
@@ -117,30 +116,35 @@ module.exports = {
         const id2 = req.body.id2
         if (id1.match(/^\d\d\d\d\d\d\d(\d\d)?$/) && id2.match(/^\d\d\d\d\d\d\d(\d\d)?$/)) {
             pool.getConnection(function (err, conn) {
-                conn.query(sql.meet_getLastGID, [], function (err, result) {
-                    if (err) {
-                        res.json({ success: false })
-                        conn.release()
-                    }
-                    else {
-                        var gid
-                        if (result[0] === undefined) {
-                            gid = 1
+                if (err) {
+                    res.json({ success: false })
+                }
+                else {
+                    conn.query(sql.meet_getLastGID, [], function (err, result) {
+                        if (err) {
+                            res.json({ success: false })
+                            conn.release()
                         }
                         else {
-                            gid = result[0].gid + 1
-                        }
-                        conn.query(sql.meet_addGroup, [gid, id1, id2], function (err, result) {
-                            if (err) {
-                                res.json({ success: false })
+                            var gid
+                            if (result[0] === undefined) {
+                                gid = 1
                             }
                             else {
-                                res.json({ success: true, gid: gid })
+                                gid = result[0].gid + 1
                             }
-                            conn.release()
-                        })
-                    }
-                })
+                            conn.query(sql.meet_addGroup, [gid, id1, id2], function (err, result) {
+                                if (err) {
+                                    res.json({ success: false })
+                                }
+                                else {
+                                    res.json({ success: true, gid: gid })
+                                }
+                                conn.release()
+                            })
+                        }
+                    })
+                }
             })
         }
         else
@@ -159,9 +163,9 @@ module.exports = {
                     else {
                         res.json({ success: true, groups: result })
                     }
+                    conn.release()
                 })
             }
-            conn.release()
         })
     },
     group_del: function (req, res) {
@@ -480,6 +484,125 @@ module.exports = {
                     }
                     else {
                         res.json({ success: true, all: result })
+                    }
+                    conn.release()
+                })
+            }
+        })
+    },
+    team_all: function (req, res) {
+        pool.getConnection(function (err, conn) {
+            if (err) {
+                res.json({ success: false })
+            }
+            else {
+                conn.query(sql.meet_getTeams, [], function (err, result) {
+                    if (err) {
+                        res.json({ success: false })
+                    }
+                    else {
+                        res.json({ success: true, data: result })
+                    }
+                    conn.release()
+                })
+            }
+        })
+    },
+    team_add: function (req, res) {
+        pool.getConnection(function (err, conn) {
+            if (err) {
+                res.json({ success: false })
+            }
+            else {
+                conn.query(sql.meet_getLastTID, [], function (err, result) {
+                    if (err) {
+                        res.json({ success: false })
+                        conn.release()
+                    }
+                    else {
+                        var tid
+                        if (result[0] === undefined) {
+                            tid = 1
+                        }
+                        else {
+                            tid = result[0].tid + 1
+                        }
+                        conn.query(sql.meet_addTeam, [tid,], function (err, result) {
+                            if (err) {
+                                res.json({ success: false })
+                            }
+                            else {
+                                res.json({ success: true })
+                            }
+                            conn.release()
+                        })
+                    }
+                })
+            }
+        })
+    },
+    team_score: function (req, res) {
+        const tid = req.body.tid
+        const score = req.body.score
+        const groups = req.body.groups
+        pool.getConnection(function (err, conn) {
+            if (err) {
+                res.json({ success: false })
+            }
+            else {
+                conn.query(sql.meet_teamAddScore, [score, groups], function (err, result) {
+                    if (err) {
+                        res.json({ success: false })
+                        conn.release()
+                    }
+                    else {
+                        conn.query(sql.meet_teamAddScore2, [score, tid], function (err, result) {
+                            if (err) {
+                                res.json({ success: false })
+                            }
+                            else {
+                                res.json({ success: true })
+                            }
+                            conn.release()
+                        })
+                    }
+                })
+            }
+        })
+    },
+    team_delete: function (req, res) {
+        const tid = req.body.tid
+        pool.getConnection(function (err, conn) {
+            if (err) {
+                res.json({ success: false })
+            }
+            else {
+                conn.query(sql.meet_delTeam, [tid,], function (err, result) {
+                    if (err) {
+                        res.json({ success: false })
+                    }
+                    else {
+                        res.json({ success: true })
+                    }
+                    conn.release()
+                })
+            }
+        })
+    },
+    team_update: function (req, res) {
+        const tid = req.body.tid
+        const groups = req.body.groups
+        pool.getConnection(function (err, conn) {
+            if (err) {
+                res.json({ success: false })
+            }
+            else {
+                conn.query(sql.meet_teamUpdate, [groups, tid], function (err, result) {
+                    if (err) {
+                        res.json({ success: false })
+                    }
+                    else {
+                        res.json({ success: true })
                     }
                     conn.release()
                 })

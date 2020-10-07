@@ -50,6 +50,11 @@ router.post('/meet/event_archive', meetRouter.checkSuper, meetRouter.event_archi
 router.get('/meet/event_cont', meetRouter.checkAuth, meetRouter.event_cont)
 router.post('/meet/event_poll', meetRouter.checkAuth, meetRouter.event_poll)
 router.get('/meet/students', meetRouter.checkSuper, meetRouter.students)
+router.get('/meet/teams', meetRouter.checkSuper, meetRouter.team_all)
+router.post('/meet/team_add', meetRouter.checkSuper, meetRouter.team_add)
+router.post('/meet/team_score', meetRouter.checkSuper, meetRouter.team_score)
+router.post('/meet/team_delete', meetRouter.checkSuper, meetRouter.team_delete)
+router.post('/meet/team_update', meetRouter.checkSuper, meetRouter.team_update)
 
 
 var requestp = require('request-promise');

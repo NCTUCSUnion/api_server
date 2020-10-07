@@ -49,6 +49,7 @@ app.use(session({
   store: sessionStore,
   saveUninitialized: true, // 是否自動儲存未初始化的會話，建議false
   resave: false, // 是否每次都重新儲存會話，建議false
+  // rolling: true,
   cookie: {
     domain: 'nctucsunion.me',
     maxAge: 600 * 1000 // 有效期，單位是毫秒
