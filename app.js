@@ -10,6 +10,7 @@ var mysqlStore = require('express-mysql-session');
 var cors = require('cors')
 var api = require('./routes/api');
 //var oauth = require('./routes/oauth');
+var secret = require('./secret')
 
 var app = express();
 
@@ -45,7 +46,7 @@ var sessionStore = new mysqlStore(dbconfig.session);
 
 app.use(session({
   name: 'session',
-  secret: 'csunionxmas',
+  secret: secret.secret,
   store: sessionStore,
   saveUninitialized: true, // 是否自動儲存未初始化的會話，建議false
   resave: false, // 是否每次都重新儲存會話，建議false
