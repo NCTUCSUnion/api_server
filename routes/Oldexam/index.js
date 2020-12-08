@@ -100,6 +100,12 @@ module.exports = {
 								case "期中考":
 									type = 'midterm'
 									break
+								case "第一次期中考":
+									type = 'midterm1'
+									break
+								case "第二次期中考":
+									type = 'midterm2'
+									break
 								case "期末考":
 									type = 'final'
 									break
