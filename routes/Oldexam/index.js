@@ -48,7 +48,7 @@ module.exports = {
 		}
 		else {
 			var form = new formidable.IncomingForm()
-			var iID, cID, eID, type
+			var iID, cID, eID, type, category
 			form.parse(req, function (err, fields, files) {
 				oldexam_pool.getConnection(function (err, connection) {
 					async.series([
@@ -74,9 +74,41 @@ module.exports = {
 							})
 						},
 						function (next) {
+							// process type
+							switch (fields.category.toString().trim()) {
+								case "大一":
+									category = 1
+									break
+								case "大二":
+									category = 2
+									break
+								case "大三":
+									category = 3
+									break
+								case "大四":
+									category = 4
+									break
+								case "研究所":
+									category = 5
+									break
+								case "資工其他":
+									category = 6
+									break
+								case "非資工科目":
+									category = 7
+									break
+								case "考資工研究所":
+									category = 8
+									break
+								default:
+									category = 7
+							}
+							next(null, category)
+						},
+						function (next) {
 							connection.query(sql.oldexamCourseCheck, [fields.course.toString().trim()], function (err, result) {
 								if (result[0] === undefined) {
-									connection.query(sql.oldexamCourseNew, [fields.course.toString().trim(), fields.category.toString().trim()], function (err, result_new) {
+									connection.query(sql.oldexamCourseNew, [fields.course.toString().trim(), category], function (err, result_new) {
 										if (err) throw err
 										else console.log('Insert new course succeed!')
 									})
